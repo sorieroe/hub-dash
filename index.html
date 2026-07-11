@@ -193,6 +193,24 @@
   .setup-error { color: var(--crit); font-size: 14px; margin: 0 0 12px; }
   .setup-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
 
+  /* Owner inbox */
+  .inbox-input {
+    width: 100%;
+    min-height: 88px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--edge);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 16px;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .inbox-input:focus-visible { outline: 2px solid var(--gold); outline-offset: 0; }
+  .inbox-send-row { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .inbox-current { margin-top: 16px; }
+
   /* Rendered markdown */
   .md { font-size: 15px; overflow-wrap: anywhere; }
   .md h1 { font-size: 20px; margin: 16px 0 8px; }
@@ -323,6 +341,16 @@
     </div>
 
     <div class="card">
+      <h2>Note to the loops</h2>
+      <textarea class="inbox-input" id="inbox-text" rows="3" aria-label="Note to the loops"
+        placeholder="Answer a question, give a GO, drop context &mdash; the next loop run reads this"></textarea>
+      <div class="inbox-send-row">
+        <button class="btn btn-gold" id="btn-inbox-send" type="button">Send</button>
+      </div>
+      <div class="md inbox-current" id="inbox-md"></div>
+    </div>
+
+    <div class="card">
       <h2>Dashboard</h2>
       <div class="md" id="dash-md"></div>
     </div>
@@ -348,6 +376,8 @@ const API = "https://api.github.com";
 const LS = { token: "hubdash_token", repo: "hubdash_repo", initials: "hubdash_initials" };
 const ACK_RE = /^ACK:\s*_+\s*$/m;
 const MAX_ACK_SCAN = 12;
+const INBOX_PATH = "owner-inbox.md";
+const INBOX_TEMPLATE = "# Owner inbox\n\nNotes from the owner to the loops. Every loop run reads this at start; when a run consumes an entry it appends \"— consumed by <loop> <date>\" to that line.\n\n";
 
 const state = {
   demo: false,
@@ -381,6 +411,9 @@ const els = {
   acksList: $("acks-list"),
   prsBlock: $("prs-block"),
   prsList: $("prs-list"),
+  inboxText: $("inbox-text"),
+  btnInboxSend: $("btn-inbox-send"),
+  inboxMd: $("inbox-md"),
   dashMd: $("dash-md"),
   rateNote: $("rate-note"),
   btnSignout: $("btn-signout"),
@@ -860,6 +893,55 @@ async function doMerge(pr, btn, row) {
   }
 }
 
+/* ---------- owner inbox (note to the loops) ---------- */
+
+async function loadInbox() {
+  els.inboxMd.textContent = "";
+  els.inboxMd.append(loadingNote());
+  try {
+    const res = await gh(`/repos/${state.repo}/contents/${INBOX_PATH}`, { accept: "application/vnd.github.raw+json" });
+    const md = await res.text();
+    els.inboxMd.innerHTML = renderMarkdown(md);
+  } catch (e) {
+    if (e.status === 404) {
+      els.inboxMd.textContent = "";
+      els.inboxMd.append(el("p", { class: "dim note", text: "Inbox is empty." }));
+    } else if (e.status !== 401) {
+      renderSectionError(els.inboxMd, e.message, loadInbox);
+    }
+  }
+}
+
+async function sendNote() {
+  if (state.demo) { toast("Demo mode — no writes"); return; }
+  const text = els.inboxText.value.trim().replace(/\s*\n\s*/g, " ");
+  if (!text) { els.inboxText.focus(); return; }
+  setBusy(els.btnInboxSend, true);
+  try {
+    let body = INBOX_TEMPLATE;
+    let sha;
+    try {
+      const res = await gh(`/repos/${state.repo}/contents/${INBOX_PATH}`);
+      const file = await res.json();
+      body = b64decodeUtf8(file.content || "");
+      sha = file.sha;
+    } catch (e) {
+      if (e.status !== 404) throw e; // no inbox yet -> create it from the template
+    }
+    if (body && !body.endsWith("\n")) body += "\n";
+    body += `- [${fmtDate(new Date())} ${state.initials}] ${text}\n`;
+    const put = { message: "Owner note via dashboard", content: b64encodeUtf8(body) };
+    if (sha) put.sha = sha; // omit sha when creating the file
+    await gh(`/repos/${state.repo}/contents/${INBOX_PATH}`, { method: "PUT", body: put });
+    toast("Sent — next loop run will read it", "ok");
+    els.inboxText.value = "";
+    els.inboxMd.innerHTML = renderMarkdown(body);
+  } catch (e) {
+    if (e.status !== 401) toast(e.message, "crit");
+  }
+  setBusy(els.btnInboxSend, false);
+}
+
 /* ---------- DASHBOARD.md ---------- */
 
 async function loadDashMd() {
@@ -893,7 +975,7 @@ async function refreshAll() {
   stampRefreshed("refreshing…");
   state.ackCount = null;
   state.prCount = null;
-  await Promise.allSettled([loadAcks(), loadPRs(), loadDashMd()]);
+  await Promise.allSettled([loadAcks(), loadPRs(), loadInbox(), loadDashMd()]);
   els.btnRefresh.disabled = false;
   stampRefreshed();
   renderRate();
@@ -923,6 +1005,13 @@ Snapshot of the current state — updated by automation on every run.
 ---
 `;
 
+const DEMO_INBOX = `# Owner inbox
+
+Notes from the owner to the loops. Every loop run reads this at start; when a run consumes an entry it appends "— consumed by <loop> <date>" to that line.
+
+- [2026-01-01 ES] GO on the docs tidy-up — consumed by Loop A 2026-01-02
+`;
+
 function renderDemo() {
   els.repoSlug.textContent = "demo/sample-repo";
   state.ackCount = 1;
@@ -933,6 +1022,7 @@ function renderDemo() {
   }]);
   state.prCount = 1;
   renderPRs([{ number: 7, title: "Tidy up the docs", branch: "docs-tidy", htmlUrl: "#" }]);
+  els.inboxMd.innerHTML = renderMarkdown(DEMO_INBOX);
   els.dashMd.innerHTML = renderMarkdown(DEMO_MD);
   updateActionsEmpty();
   stampRefreshed("demo data");
@@ -944,6 +1034,7 @@ function renderDemo() {
 els.setupForm.addEventListener("submit", onSaveSetup);
 els.btnBack.addEventListener("click", () => { showView("dashboard"); });
 els.btnSignout.addEventListener("click", signOut);
+els.btnInboxSend.addEventListener("click", sendNote);
 els.btnRefresh.addEventListener("click", refreshAll);
 els.btnGear.addEventListener("click", () => {
   if (state.demo) { toast("Demo mode — settings disabled"); return; }
