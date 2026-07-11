@@ -1,0 +1,9 @@
+{
+  "name": "Hub Dashboard",
+  "short_name": "Hub",
+  "display": "standalone",
+  "start_url": ".",
+  "background_color": "#17181C",
+  "theme_color": "#17181C",
+  "icons": []
+}

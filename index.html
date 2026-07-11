@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17181C">
+<meta name="color-scheme" content="dark light">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Hub Dashboard</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%2317181C'/%3E%3Ccircle cx='8' cy='8' r='4' fill='%23E8B54D'/%3E%3C/svg%3E">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #17181C;
+    --card: #24262F;
+    --edge: #2E313C;
+    --ink: #F2EEE3;
+    --dim: #A8A493;
+    --gold: #E8B54D;
+    --ok: #5FA97C;
+    --crit: #C8402E;
+    --idle: #6E7180;
+    --gold-ink: #17181C;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      color-scheme: light;
+      --bg: #F7F4EC;
+      --card: #FFFFFF;
+      --edge: #E5E0D2;
+      --ink: #22242B;
+      --dim: #6E6A5C;
+      --gold: #C4922E;
+      --ok: #3E7D58;
+      --crit: #B03A28;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #17181C;
+    --card: #24262F;
+    --edge: #2E313C;
+    --ink: #F2EEE3;
+    --dim: #A8A493;
+    --gold: #E8B54D;
+    --ok: #5FA97C;
+    --crit: #C8402E;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #F7F4EC;
+    --card: #FFFFFF;
+    --edge: #E5E0D2;
+    --ink: #22242B;
+    --dim: #6E6A5C;
+    --gold: #C4922E;
+    --ok: #3E7D58;
+    --crit: #B03A28;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 12px 16px 32px; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+
+  /* Header */
+  .app-header { max-width: 760px; margin: 0 auto; padding: 14px 16px 0; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .wordmark { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .wordmark-dot { color: var(--gold); margin-left: 2px; }
+  .header-actions { display: flex; gap: 8px; }
+  .header-meta { font-size: 13px; color: var(--dim); margin-top: 2px; overflow-wrap: anywhere; }
+  .header-meta .sep { margin: 0 6px; }
+
+  /* Cards + sections */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--edge);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .card h2 { margin: 0 0 12px; font-size: 17px; }
+  .card h3 { margin: 16px 0 8px; font-size: 14px; color: var(--dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .card h3:first-of-type { margin-top: 4px; }
+  .dim { color: var(--dim); }
+  .note { font-size: 14px; margin: 4px 0; }
+
+  /* Pills */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 1px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+  }
+  .pill-ok { color: var(--ok); }
+  .pill-crit { color: var(--crit); }
+  .pill-idle { color: var(--idle); }
+
+  /* Buttons */
+  .btn {
+    min-height: 44px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--edge);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled, .btn.busy { opacity: 0.5; cursor: default; transform: none; }
+  .btn-gold { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); }
+  .btn-ghost { background: transparent; }
+  .btn-block { width: 100%; }
+  .iconbtn {
+    min-height: 44px;
+    min-width: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--edge);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .iconbtn:disabled { opacity: 0.5; cursor: default; }
+
+  /* Action rows */
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--edge);
+  }
+  .row:first-child { border-top: none; padding-top: 2px; }
+  .row-main { flex: 1; min-width: 0; }
+  .row-title { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+  .row-sub { font-size: 13px; color: var(--dim); overflow-wrap: anywhere; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  .row-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .inline-error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    color: var(--crit);
+    font-size: 14px;
+  }
+  .all-clear { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 15px; }
+
+  /* Setup */
+  .setup-help { font-size: 14px; color: var(--dim); margin: 8px 0 16px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--dim); margin-bottom: 6px; }
+  .field input {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--edge);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 16px;
+  }
+  .field input:focus-visible { outline: 2px solid var(--gold); outline-offset: 0; }
+  .setup-error { color: var(--crit); font-size: 14px; margin: 0 0 12px; }
+  .setup-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+
+  /* Rendered markdown */
+  .md { font-size: 15px; overflow-wrap: anywhere; }
+  .md h1 { font-size: 20px; margin: 16px 0 8px; }
+  .md h2 { font-size: 17px; margin: 16px 0 8px; }
+  .md h3 { font-size: 15px; margin: 14px 0 6px; }
+  .md h1:first-child, .md h2:first-child, .md h3:first-child { margin-top: 0; }
+  .md p { margin: 8px 0; }
+  .md ul { margin: 8px 0; padding-left: 22px; }
+  .md li { margin: 3px 0; }
+  .md a { color: var(--gold); }
+  .md code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+    background: var(--bg);
+    border: 1px solid var(--edge);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+  .md blockquote {
+    margin: 10px 0;
+    padding: 4px 12px;
+    border-left: 3px solid var(--gold);
+    color: var(--dim);
+  }
+  .md blockquote p { margin: 4px 0; }
+  .md hr { border: none; border-top: 1px solid var(--edge); margin: 14px 0; }
+  .table-wrap { overflow-x: auto; margin: 10px 0; }
+  .md table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  .md th, .md td { border: 1px solid var(--edge); padding: 6px 10px; text-align: left; white-space: nowrap; }
+  .md th { color: var(--dim); font-weight: 600; }
+
+  /* Footer */
+  .foot { margin-top: 20px; text-align: center; }
+  .foot p { font-size: 13px; margin: 4px 0; }
+  .foot .btn { margin-top: 10px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 8px);
+    max-width: min(90vw, 480px);
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid var(--edge);
+    border-left: 3px solid var(--idle);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 14px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+  .toast-ok { border-left-color: var(--ok); }
+  .toast-crit { border-left-color: var(--crit); }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-row">
+    <span class="wordmark">Hub<span class="wordmark-dot" aria-hidden="true">&#9679;</span></span>
+    <div class="header-actions" id="header-actions" hidden>
+      <button class="iconbtn" id="btn-refresh" type="button" aria-label="Refresh" title="Refresh">&#8635;</button>
+      <button class="iconbtn" id="btn-gear" type="button" aria-label="Settings" title="Settings">&#9881;</button>
+    </div>
+  </div>
+  <div class="header-meta" id="header-meta" hidden>
+    <span id="repo-slug"></span><span class="sep" aria-hidden="true">&#183;</span><span id="last-refreshed"></span>
+  </div>
+</header>
+
+<main>
+
+  <!-- SETUP VIEW -->
+  <section id="view-setup" hidden>
+    <div class="card">
+      <h2>Set up</h2>
+      <p class="setup-error" id="setup-error" role="alert" hidden></p>
+      <p class="setup-help">
+        Create a fine-grained personal access token at
+        <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a>
+        &mdash; Repository access: only your hub repo; Permissions: Contents Read+Write,
+        Pull requests Read+Write. It is stored only in this browser.
+      </p>
+      <form id="setup-form">
+        <div class="field">
+          <label for="in-repo">Repository (owner/name)</label>
+          <input id="in-repo" type="text" placeholder="owner/repo" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="in-initials">Your initials</label>
+          <input id="in-initials" type="text" maxlength="6" autocapitalize="characters" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="in-token">Fine-grained personal access token</label>
+          <input id="in-token" type="password" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="setup-buttons">
+          <button class="btn btn-gold btn-block" id="btn-save" type="submit">Save &amp; open dashboard</button>
+          <button class="btn btn-ghost btn-block" id="btn-back" type="button" hidden>Back to dashboard</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- DASHBOARD VIEW -->
+  <section id="view-dashboard" hidden>
+
+    <div class="card">
+      <h2>Actions</h2>
+      <div class="all-clear" id="actions-empty" hidden>
+        <span class="pill pill-ok">All clear</span>
+        <span>Nothing waiting on you.</span>
+      </div>
+      <div id="acks-block">
+        <h3>Pending ACKs</h3>
+        <div id="acks-list"></div>
+      </div>
+      <div id="prs-block">
+        <h3>Open PRs</h3>
+        <div id="prs-list"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Dashboard</h2>
+      <div class="md" id="dash-md"></div>
+    </div>
+
+    <footer class="foot">
+      <p class="dim" id="rate-note"></p>
+      <p class="dim">Code is public &mdash; your data never leaves GitHub and this device.</p>
+      <button class="btn btn-ghost" id="btn-signout" type="button">Sign out</button>
+    </footer>
+
+  </section>
+
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+"use strict";
+
+/* ---------- constants + state ---------- */
+
+const API = "https://api.github.com";
+const LS = { token: "hubdash_token", repo: "hubdash_repo", initials: "hubdash_initials" };
+const ACK_RE = /^ACK:\s*_+\s*$/m;
+const MAX_ACK_SCAN = 12;
+
+const state = {
+  demo: false,
+  token: "",
+  repo: "",
+  initials: "ES",
+  tokenRejected: false,
+  ackCount: null,
+  prCount: null,
+  rateRemaining: null,
+};
+
+const $ = (id) => document.getElementById(id);
+const els = {
+  headerActions: $("header-actions"),
+  headerMeta: $("header-meta"),
+  repoSlug: $("repo-slug"),
+  lastRefreshed: $("last-refreshed"),
+  btnRefresh: $("btn-refresh"),
+  btnGear: $("btn-gear"),
+  viewSetup: $("view-setup"),
+  viewDash: $("view-dashboard"),
+  setupForm: $("setup-form"),
+  setupError: $("setup-error"),
+  inRepo: $("in-repo"),
+  inInitials: $("in-initials"),
+  inToken: $("in-token"),
+  btnBack: $("btn-back"),
+  actionsEmpty: $("actions-empty"),
+  acksBlock: $("acks-block"),
+  acksList: $("acks-list"),
+  prsBlock: $("prs-block"),
+  prsList: $("prs-list"),
+  dashMd: $("dash-md"),
+  rateNote: $("rate-note"),
+  btnSignout: $("btn-signout"),
+  toast: $("toast"),
+};
+
+/* ---------- tiny DOM + format helpers ---------- */
+
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") node.className = v;
+    else if (k === "text") node.textContent = v;
+    else if (k.startsWith("on")) node.addEventListener(k.slice(2), v);
+    else node.setAttribute(k, v);
+  }
+  for (const c of children) node.append(c);
+  return node;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
+}
+
+function fmtDate(d) {
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+function encPath(path) {
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
+/* Unicode-safe base64 (GitHub contents API) */
+function b64decodeUtf8(b64) {
+  const bin = atob(b64.replace(/\s/g, ""));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+function b64encodeUtf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
+}
+
+/* ---------- toast (single component) ---------- */
+
+let toastTimer = null;
+function toast(msg, kind) {
+  els.toast.textContent = msg;
+  els.toast.className = "toast show" + (kind ? " toast-" + kind : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => els.toast.classList.remove("show"), 3500);
+}
+
+/* ---------- GitHub fetch helper (everything goes through here) ---------- */
+
+class GhError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function gh(path, { method = "GET", accept = "application/vnd.github+json", body } = {}) {
+  let res;
+  try {
+    const headers = {
+      "Authorization": `Bearer ${state.token}`,
+      "Accept": accept,
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
+    if (body !== undefined) headers["Content-Type"] = "application/json";
+    res = await fetch(API + path, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    throw new GhError(0, "Network error — check your connection and retry.");
+  }
+  const remaining = res.headers.get("x-ratelimit-remaining");
+  if (remaining !== null) {
+    state.rateRemaining = remaining;
+    renderRate();
+  }
+  if (res.ok) return res;
+  if (res.status === 401) {
+    state.tokenRejected = true;
+    showSetup("GitHub rejected the token — paste a valid token and save.");
+    throw new GhError(401, "Token rejected.");
+  }
+  let msg = `GitHub error ${res.status}`;
+  try {
+    const j = await res.json();
+    if (j && j.message) msg = j.message;
+  } catch { /* non-JSON body */ }
+  if (res.status === 403 && remaining === "0") {
+    const reset = res.headers.get("x-ratelimit-reset");
+    const when = reset
+      ? new Date(Number(reset) * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+      : "soon";
+    msg = `API rate limit reached — it resets around ${when}.`;
+  }
+  throw new GhError(res.status, msg);
+}
+
+/* ---------- minimal markdown renderer (escape first, then transform) ---------- */
+
+function resolveHref(url) {
+  if (/^(https?:|mailto:|#)/i.test(url)) return url;
+  const clean = url.replace(/^\.\//, "").replace(/^\//, "");
+  return `https://github.com/${state.repo}/blob/main/${clean}`;
+}
+
+function inlineMd(escaped) {
+  const stash = [];
+  let s = escaped.replace(/`([^`]+)`/g, (m, code) => "\u0000" + (stash.push(code) - 1) + "\u0000");
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, label, url) => {
+    const href = resolveHref(url);
+    const ext = /^https?:/i.test(href) ? ' target="_blank" rel="noopener"' : "";
+    return `<a href="${href}"${ext}>${label}</a>`;
+  });
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  return s.replace(/\u0000(\d+)\u0000/g, (m, i) => `<code>${stash[Number(i)]}</code>`);
+}
+
+function renderMarkdown(md) {
+  const lines = md.replace(/\r\n?/g, "\n").split("\n");
+  const out = [];
+  const isSep = (s) => Boolean(s) && s.includes("|") && s.includes("-") && /^[\s|:\-]+$/.test(s);
+  const cells = (s) => {
+    let t = s.trim();
+    if (t.startsWith("|")) t = t.slice(1);
+    if (t.endsWith("|")) t = t.slice(0, -1);
+    return t.split("|").map((c) => c.trim());
+  };
+  const nextTrim = (i) => (i + 1 < lines.length ? lines[i + 1].trim() : "");
+  const isBlockStart = (t, next) =>
+    /^#{1,3}\s/.test(t) || /^(-{3,}|\*{3,}|_{3,})$/.test(t) || /^[-*]\s/.test(t) ||
+    t.startsWith(">") || (t.includes("|") && isSep(next));
+  let i = 0;
+  while (i < lines.length) {
+    const t = lines[i].trim();
+    if (!t) { i++; continue; }
+    const h = /^(#{1,3})\s+(.*)$/.exec(t);
+    if (h) {
+      const lvl = h[1].length;
+      out.push(`<h${lvl}>${inlineMd(escapeHtml(h[2]))}</h${lvl}>`);
+      i++;
+      continue;
+    }
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(t)) { out.push("<hr>"); i++; continue; }
+    if (t.startsWith(">")) {
+      const buf = [];
+      while (i < lines.length && lines[i].trim().startsWith(">")) {
+        buf.push(inlineMd(escapeHtml(lines[i].trim().replace(/^>\s?/, ""))));
+        i++;
+      }
+      out.push(`<blockquote><p>${buf.join("<br>")}</p></blockquote>`);
+      continue;
+    }
+    if (/^[-*]\s+/.test(t)) {
+      const buf = [];
+      while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) {
+        buf.push(`<li>${inlineMd(escapeHtml(lines[i].trim().replace(/^[-*]\s+/, "")))}</li>`);
+        i++;
+      }
+      out.push(`<ul>${buf.join("")}</ul>`);
+      continue;
+    }
+    if (t.includes("|") && isSep(nextTrim(i))) {
+      const head = cells(t);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && lines[i].trim() && lines[i].includes("|")) {
+        rows.push(cells(lines[i].trim()));
+        i++;
+      }
+      const th = head.map((c) => `<th>${inlineMd(escapeHtml(c))}</th>`).join("");
+      const trs = rows.map((r) =>
+        `<tr>${head.map((c, ci) => `<td>${inlineMd(escapeHtml(r[ci] ?? ""))}</td>`).join("")}</tr>`
+      ).join("");
+      out.push(`<div class="table-wrap"><table><thead><tr>${th}</tr></thead><tbody>${trs}</tbody></table></div>`);
+      continue;
+    }
+    const buf = [];
+    while (i < lines.length) {
+      const pt = lines[i].trim();
+      if (!pt || (buf.length && isBlockStart(pt, nextTrim(i)))) break;
+      buf.push(pt);
+      i++;
+    }
+    out.push(`<p>${inlineMd(escapeHtml(buf.join(" ")))}</p>`);
+  }
+  return out.join("\n");
+}
+
+/* ---------- views ---------- */
+
+function showView(name) {
+  els.viewSetup.hidden = name !== "setup";
+  els.viewDash.hidden = name !== "dashboard";
+  els.headerActions.hidden = name !== "dashboard";
+  els.headerMeta.hidden = name !== "dashboard";
+}
+
+function showSetup(errorMsg) {
+  els.inRepo.value = state.repo;
+  els.inInitials.value = state.initials;
+  els.inToken.value = "";
+  els.inToken.placeholder = state.token ? "(unchanged — leave blank to keep)" : "";
+  els.setupError.textContent = errorMsg || "";
+  els.setupError.hidden = !errorMsg;
+  els.btnBack.hidden = !(state.token && state.repo && !state.tokenRejected);
+  showView("setup");
+  (state.repo ? els.inToken : els.inRepo).focus();
+}
+
+function onSaveSetup(e) {
+  e.preventDefault();
+  const repo = els.inRepo.value.trim()
+    .replace(/^https?:\/\/github\.com\//i, "")
+    .replace(/\.git$/, "")
+    .replace(/\/+$/, "");
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)) {
+    els.setupError.textContent = "Repository must look like owner/name.";
+    els.setupError.hidden = false;
+    return;
+  }
+  const initials = els.inInitials.value.trim() || "ES";
+  const token = els.inToken.value.trim() || state.token;
+  if (!token) {
+    els.setupError.textContent = "Paste a token — the dashboard cannot read the repo without one.";
+    els.setupError.hidden = false;
+    return;
+  }
+  state.repo = repo;
+  state.initials = initials;
+  state.token = token;
+  state.tokenRejected = false;
+  localStorage.setItem(LS.repo, repo);
+  localStorage.setItem(LS.initials, initials);
+  localStorage.setItem(LS.token, token);
+  els.inToken.value = "";
+  showView("dashboard");
+  refreshAll();
+}
+
+function signOut() {
+  if (state.demo) { toast("Demo mode — no writes"); return; }
+  localStorage.removeItem(LS.token);
+  state.token = "";
+  state.tokenRejected = false;
+  toast("Signed out — token removed from this browser.", "ok");
+  showSetup();
+}
+
+/* ---------- shared render bits ---------- */
+
+function renderRate() {
+  if (state.demo) { els.rateNote.textContent = "Demo mode — no API calls made."; return; }
+  els.rateNote.textContent = state.rateRemaining === null
+    ? ""
+    : `GitHub API: ${state.rateRemaining} requests left this hour.`;
+}
+
+function loadingNote() {
+  return el("p", { class: "dim note", text: "Loading…" });
+}
+
+function noneNote() {
+  return el("p", { class: "dim note", text: "None right now." });
+}
+
+function renderSectionError(container, msg, retry) {
+  container.textContent = "";
+  container.append(
+    el("div", { class: "inline-error" },
+      el("span", { text: msg || "Something went wrong." }),
+      el("button", { class: "btn btn-ghost", type: "button", onclick: retry, text: "Retry" })
+    )
+  );
+}
+
+function updateActionsEmpty() {
+  const bothEmpty = state.ackCount === 0 && state.prCount === 0;
+  els.actionsEmpty.hidden = !bothEmpty;
+  els.acksBlock.hidden = bothEmpty;
+  els.prsBlock.hidden = bothEmpty;
+}
+
+function setBusy(btn, busy) {
+  if (busy) {
+    btn.dataset.label = btn.textContent;
+    btn.textContent = "…";
+    btn.disabled = true;
+    btn.classList.add("busy");
+  } else {
+    if (btn.dataset.label) btn.textContent = btn.dataset.label;
+    btn.disabled = false;
+    btn.classList.remove("busy");
+  }
+}
+
+function removeActionRow(row, kind) {
+  row.remove();
+  if (kind === "ack") {
+    state.ackCount = Math.max(0, (state.ackCount ?? 1) - 1);
+    if (state.ackCount === 0) els.acksList.append(noneNote());
+  } else {
+    state.prCount = Math.max(0, (state.prCount ?? 1) - 1);
+    if (state.prCount === 0) els.prsList.append(noneNote());
+  }
+  updateActionsEmpty();
+}
+
+/* ---------- pending ACKs ---------- */
+
+function firstHeading(text) {
+  const m = /^#{1,6}\s+(.+)$/m.exec(text);
+  return m ? m[1].trim() : "";
+}
+
+function renderAcks(items) {
+  els.acksList.textContent = "";
+  if (!items.length) {
+    els.acksList.append(noneNote());
+    return;
+  }
+  for (const item of items) {
+    const btn = el("button", { class: "btn btn-gold", type: "button", text: "ACK" });
+    btn.addEventListener("click", () => doAck(item, btn, row));
+    const row = el("div", { class: "row" },
+      el("div", { class: "row-main" },
+        el("div", { class: "row-title", text: item.heading || item.name }),
+        el("div", { class: "row-sub mono", text: item.name })
+      ),
+      el("div", { class: "row-actions" }, btn)
+    );
+    els.acksList.append(row);
+  }
+}
+
+async function loadAcks() {
+  els.acksList.textContent = "";
+  els.acksList.append(loadingNote());
+  try {
+    let files = [];
+    try {
+      const res = await gh(`/repos/${state.repo}/contents/loops/output`);
+      const listing = await res.json();
+      files = (Array.isArray(listing) ? listing : []).filter((f) => f.type === "file");
+    } catch (e) {
+      if (e.status !== 404) throw e; // no loops/output dir -> nothing pending
+    }
+    files.sort((a, b) => b.name.localeCompare(a.name));
+    const newest = files.slice(0, MAX_ACK_SCAN);
+    const texts = await Promise.all(newest.map((f) =>
+      gh(`/repos/${state.repo}/contents/${encPath(f.path)}`, { accept: "application/vnd.github.raw+json" })
+        .then((r) => r.text())
+    ));
+    const pending = [];
+    newest.forEach((f, idx) => {
+      if (ACK_RE.test(texts[idx])) {
+        pending.push({ name: f.name, path: f.path, heading: firstHeading(texts[idx]) });
+      }
+    });
+    state.ackCount = pending.length;
+    renderAcks(pending);
+  } catch (e) {
+    state.ackCount = null;
+    if (e.status !== 401) renderSectionError(els.acksList, e.message, loadAcks);
+  }
+  updateActionsEmpty();
+}
+
+async function doAck(item, btn, row) {
+  if (state.demo) { toast("Demo mode — no writes"); return; }
+  setBusy(btn, true);
+  try {
+    const res = await gh(`/repos/${state.repo}/contents/${encPath(item.path)}`);
+    const file = await res.json();
+    const text = b64decodeUtf8(file.content || "");
+    if (!ACK_RE.test(text)) {
+      toast(`${item.name} was already acknowledged.`, "ok");
+      removeActionRow(row, "ack");
+      return;
+    }
+    const stamp = `ACK: ${state.initials} ${fmtDate(new Date())} (via dashboard)`;
+    const updated = text.replace(ACK_RE, stamp); // non-global: first match only
+    await gh(`/repos/${state.repo}/contents/${encPath(item.path)}`, {
+      method: "PUT",
+      body: {
+        message: `ACK ${item.name} via dashboard`,
+        content: b64encodeUtf8(updated),
+        sha: file.sha,
+      },
+    });
+    toast(`Acknowledged ${item.name}`, "ok");
+    removeActionRow(row, "ack");
+  } catch (e) {
+    if (e.status !== 401) toast(e.message, "crit");
+    setBusy(btn, false);
+  }
+}
+
+/* ---------- open PRs ---------- */
+
+function renderPRs(prs) {
+  els.prsList.textContent = "";
+  if (!prs.length) {
+    els.prsList.append(noneNote());
+    return;
+  }
+  for (const pr of prs) {
+    const mergeBtn = el("button", { class: "btn btn-gold", type: "button", text: "Merge" });
+    mergeBtn.addEventListener("click", () => doMerge(pr, mergeBtn, row));
+    const row = el("div", { class: "row" },
+      el("div", { class: "row-main" },
+        el("div", { class: "row-title", text: `#${pr.number} ${pr.title}` }),
+        el("div", { class: "row-sub mono", text: pr.branch })
+      ),
+      el("div", { class: "row-actions" },
+        el("a", { class: "btn btn-ghost", href: pr.htmlUrl, target: "_blank", rel: "noopener", text: "View" }),
+        mergeBtn
+      )
+    );
+    els.prsList.append(row);
+  }
+}
+
+async function loadPRs() {
+  els.prsList.textContent = "";
+  els.prsList.append(loadingNote());
+  try {
+    const res = await gh(`/repos/${state.repo}/pulls?state=open&per_page=20`);
+    const pulls = await res.json();
+    const prs = (Array.isArray(pulls) ? pulls : []).map((p) => ({
+      number: p.number,
+      title: p.title || "",
+      branch: (p.head && p.head.ref) || "",
+      htmlUrl: p.html_url || "#",
+    }));
+    state.prCount = prs.length;
+    renderPRs(prs);
+  } catch (e) {
+    state.prCount = null;
+    if (e.status !== 401) renderSectionError(els.prsList, e.message, loadPRs);
+  }
+  updateActionsEmpty();
+}
+
+async function doMerge(pr, btn, row) {
+  if (state.demo) { toast("Demo mode — no writes"); return; }
+  if (!window.confirm(`Merge PR #${pr.number} — “${pr.title}”?`)) return;
+  setBusy(btn, true);
+  try {
+    await gh(`/repos/${state.repo}/pulls/${pr.number}/merge`, {
+      method: "PUT",
+      body: { merge_method: "merge" },
+    });
+    toast(`Merged #${pr.number}`, "ok");
+    removeActionRow(row, "pr");
+  } catch (e) {
+    // 405 (not mergeable / checks) and 409 (conflict / head changed) carry API messages
+    if (e.status !== 401) toast(e.message || "Merge failed.", "crit");
+    setBusy(btn, false);
+  }
+}
+
+/* ---------- DASHBOARD.md ---------- */
+
+async function loadDashMd() {
+  els.dashMd.textContent = "";
+  els.dashMd.append(loadingNote());
+  try {
+    const res = await gh(`/repos/${state.repo}/contents/DASHBOARD.md`, { accept: "application/vnd.github.raw+json" });
+    const md = await res.text();
+    els.dashMd.innerHTML = renderMarkdown(md);
+  } catch (e) {
+    if (e.status === 404) {
+      els.dashMd.textContent = "";
+      els.dashMd.append(el("p", { class: "dim note", text: "No DASHBOARD.md found in the repo root." }));
+    } else if (e.status !== 401) {
+      renderSectionError(els.dashMd, e.message, loadDashMd);
+    }
+  }
+}
+
+/* ---------- refresh ---------- */
+
+function stampRefreshed(label) {
+  els.lastRefreshed.textContent = label ??
+    "updated " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+async function refreshAll() {
+  if (state.demo) { renderDemo(); toast("Demo data refreshed", "ok"); return; }
+  els.repoSlug.textContent = state.repo;
+  els.btnRefresh.disabled = true;
+  stampRefreshed("refreshing…");
+  state.ackCount = null;
+  state.prCount = null;
+  await Promise.allSettled([loadAcks(), loadPRs(), loadDashMd()]);
+  els.btnRefresh.disabled = false;
+  stampRefreshed();
+  renderRate();
+}
+
+/* ---------- demo mode (fully offline) ---------- */
+
+const DEMO_MD = `# Ops Dashboard
+
+Snapshot of the current state — updated by automation on every run.
+
+## Loops
+
+| Loop | Status | Last run | Notes |
+| --- | --- | --- | --- |
+| Loop A | ok | 2026-01-01 | all green |
+| Loop B | idle | 2025-12-30 | waiting on input |
+
+## Next up
+
+- Review the latest loop output
+- Merge the open docs PR
+- **Ship it** — see [the notes](docs/notes.md) and run \`make deploy\`
+
+> Everything on this page is sample data for the demo.
+
+---
+`;
+
+function renderDemo() {
+  els.repoSlug.textContent = "demo/sample-repo";
+  state.ackCount = 1;
+  renderAcks([{
+    name: "2026-01-01-loop-x.md",
+    path: "loops/output/2026-01-01-loop-x.md",
+    heading: "Loop X — run 1",
+  }]);
+  state.prCount = 1;
+  renderPRs([{ number: 7, title: "Tidy up the docs", branch: "docs-tidy", htmlUrl: "#" }]);
+  els.dashMd.innerHTML = renderMarkdown(DEMO_MD);
+  updateActionsEmpty();
+  stampRefreshed("demo data");
+  renderRate();
+}
+
+/* ---------- wiring + init ---------- */
+
+els.setupForm.addEventListener("submit", onSaveSetup);
+els.btnBack.addEventListener("click", () => { showView("dashboard"); });
+els.btnSignout.addEventListener("click", signOut);
+els.btnRefresh.addEventListener("click", refreshAll);
+els.btnGear.addEventListener("click", () => {
+  if (state.demo) { toast("Demo mode — settings disabled"); return; }
+  showSetup();
+});
+
+function init() {
+  const params = new URLSearchParams(location.search);
+  if (params.get("demo") === "1") {
+    state.demo = true;
+    state.repo = "demo/sample-repo";
+    showView("dashboard");
+    renderDemo();
+    return;
+  }
+  state.token = localStorage.getItem(LS.token) || "";
+  state.repo = localStorage.getItem(LS.repo) || "";
+  state.initials = localStorage.getItem(LS.initials) || "ES";
+  if (!state.token || !state.repo) {
+    showSetup();
+  } else {
+    showView("dashboard");
+    refreshAll();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
