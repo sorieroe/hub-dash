@@ -6,8 +6,8 @@ Single source of truth for build state. Any session picks the top unblocked task
 - [x] Vision, game design, simulation model (docs 01–03)
 - [x] Market/platform/tech research (docs 04–06)
 - [x] Meta-architecture, data model, component spec, agent factory (docs 09–11, 14)
-- [ ] Content pipeline doc from ground-truth research (doc 12) — `in-progress`
-- [ ] Game-feel/progression doc from research (doc 13) — `in-progress`
+- [x] Content pipeline doc from ground-truth research (doc 12)
+- [x] Game-feel/progression doc from research (doc 13)
 - [ ] **G0: founder reviews the full framework** — `blocked on founder`
 
 ## E1 — Pre-production design  `[blocked by G0]`

@@ -6,7 +6,7 @@
 
 ## State of the draft
 
-Concept + deep research complete (three parallel research passes over competitors, monetization/platforms, and tech stack, 2026-07). Next step is a 2-week walking skeleton to prove the fun. Nothing is built yet.
+Concept, deep research (five parallel research passes: competitors, monetization/platforms, tech stack, ground-truth content sources, game-feel/progression), and the full build framework are complete (2026-07). **Currently at gate G0: founder review of this framework.** After G0 comes pre-production design (concept art + UI mocks for review at G1) — no gameplay code before G1 approval. Build state lives in [TASKS.md](TASKS.md).
 
 ## TL;DR of the research
 
@@ -27,4 +27,11 @@ Concept + deep research complete (three parallel research passes over competitor
 | [06-tech-stack.md](docs/06-tech-stack.md) | Recommended stack, ruled-out traps, architecture sketch, 2-week walking skeleton, risks |
 | [07-roadmap.md](docs/07-roadmap.md) | Phases 0–4 with go/no-go gates |
 | [08-open-questions.md](docs/08-open-questions.md) | Decisions still owed — name, competitive teardown, AI-interviewer timing, … |
+| [09-build-framework.md](docs/09-build-framework.md) | Our own system design: client-side sim scaling insight, payments, failure modes, cost |
+| [10-data-model.md](docs/10-data-model.md) | Schema: XP ledger, concept mastery, replays, leaderboards, entitlements, anonymous-claim flow |
+| [11-component-spec.md](docs/11-component-spec.md) | The 8-section template every palette component must fill (physics + character sheet + provenance + fixtures) |
+| [12-content-pipeline.md](docs/12-content-pipeline.md) | Ground-truth sources with verified licenses, canonical 35-question backlog, component frequency, legal posture |
+| [13-game-feel-and-progression.md](docs/13-game-feel-and-progression.md) | "Living toy infrastructure" art direction, juice priorities, sound model, evidence-based progression |
+| [14-agent-factory.md](docs/14-agent-factory.md) | Build process: gates G0–G4, pre-production-first, fan-out worktrees, five-judge convergence loops |
+| [TASKS.md](TASKS.md) | The task master — epics E0–E10 with live states |
 | [levels/example-url-shortener.json](levels/example-url-shortener.json) | Proof that levels are data, not code |
