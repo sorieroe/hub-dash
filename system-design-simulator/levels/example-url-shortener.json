@@ -1,0 +1,35 @@
+{
+  "$comment": "Illustrative level schema — proves levels are data, not code. Engine interprets this; adding level #40 is authoring JSON, not writing TypeScript.",
+  "id": "ch1-url-shortener",
+  "title": "Shortly: Launch Day",
+  "chapter": "storage",
+  "brief": "Your URL shortener goes live at 09:00. Tech press picked it up. Store every link, keep redirects snappy, don't blow the $150/mo budget.",
+  "seed": 8675309,
+  "timeScale": "1 real sec = 5 sim min",
+  "palette": ["app-server", "sql-db", "cache", "load-balancer", "monitoring"],
+  "budgetPerMonth": 150,
+  "slo": {
+    "p99LatencyMs": 500,
+    "maxErrorRatePct": 1.0,
+    "maxDataLoss": 0
+  },
+  "traffic": {
+    "mix": [
+      { "type": "write", "name": "shorten", "payloadKb": 1, "critical": true, "share": 0.05 },
+      { "type": "read", "name": "redirect", "payloadKb": 0.5, "critical": false, "share": 0.95 }
+    ],
+    "phases": [
+      { "name": "Morning launch", "curve": "steady", "rps": 20, "durationSimHours": 3 },
+      { "name": "Press hits", "curve": "viral-spike", "peakRps": 400, "attackMins": 10, "decayMins": 45, "durationSimHours": 2 },
+      { "name": "Steady growth", "curve": "linear", "startRps": 60, "endRps": 150, "durationSimHours": 19 }
+    ]
+  },
+  "chaos": [
+    { "at": "simHour:20", "event": "instance-death", "target": "random-stateful", "$comment": "The single-DB player loses everything here. The replicated player shrugs." }
+  ],
+  "debrief": {
+    "concepts": ["read-heavy workloads", "cache hit ratio", "single point of failure", "replication"],
+    "interviewLine": "A 95:5 read/write ratio means the first scaling move is a cache in front of the store, not a bigger database."
+  },
+  "starThresholds": { "one": "pass SLOs", "two": "pass + under budget", "three": "pass + under budget + zero SPOFs at end" }
+}
