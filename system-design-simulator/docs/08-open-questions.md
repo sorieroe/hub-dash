@@ -12,3 +12,5 @@ Running list of things we (human + Claude) still need to decide. Ordered roughly
 8. **Content licensing.** Interview questions themselves aren't copyrightable, but course-alike phrasing is a lane to stay out of — our levels should read as original scenarios (fictional companies) that *map* to the classics.
 9. **Community levels.** Levels-as-JSON makes a level editor nearly free engineering-wise — but moderation/quality isn't. v2+.
 10. **Marketing beachhead.** Daily-challenge share cards vs. YouTube/Shorts of spectacular failures vs. SEO codex pages — pick one to do properly at launch.
+11. **Firsthand competitive teardown.** Actually play SysSimulator (syssimulator.com), LeetDesign (leetdesign.com), and Hello Interview's guided practice before building — cheap intel on what a sim feels like *without* game design, and what rubric-grading feels like without a sim. (Research summaries in doc 04 are secondhand.)
+12. **Name collision check.** "System design simulator" is already used by at least three sites (.org/.in/.com). The product name must not be descriptive-generic — reinforces question 1.

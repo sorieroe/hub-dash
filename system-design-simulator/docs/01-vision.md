@@ -26,7 +26,7 @@ Every system design answer is really a set of claims about failure: *this compon
 
 ## Why this can win
 
-- **The feedback loop is the moat.** Everyone else sells explanations; we sell *consequences*. A design that survives the simulation is a design you can defend out loud in a real interview.
+- **The feedback loop, made into a game, is the moat.** The paid incumbents (Hello Interview, ByteByteGo, Educative) sell explanations and critiques; nothing they sell *runs*. Free prototypes of the simulation mechanic do exist (see doc 04 — SysSimulator, LeetDesign, and a half-dozen others), but every one of them stopped at "tool": no progression, no scoring, no spectacle, no business, no distribution. Consequences + game design + a real go-to-market is the unclaimed combination.
 - **It's inherently shareable.** "My Dropbox design survived 1M concurrent users at $4.2k/mo infra cost — can you beat it?" is a screenshot people post. Passive courses have no equivalent.
 - **It's fun on a commute.** Levels are 5–15 minute sessions. Streaks, stars, daily challenges — the Duolingo loop applied to a subject people are *already* forced to study.
 - **Content compounds.** Every classic interview question (URL shortener, chat app, news feed, ride sharing…) is a level. Levels are data, not code — the engine is built once, the catalog grows forever, and community-made levels are a plausible v2.
